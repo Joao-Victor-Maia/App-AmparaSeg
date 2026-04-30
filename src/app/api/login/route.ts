@@ -1,11 +1,9 @@
-import { NextResponse } from "next/server";
-
 import { SESSION_COOKIE_NAME, verifyAdminCredentials } from "@/lib/auth";
 import { signSession } from "@/lib/authCore";
 
 function buildSessionCookie(token: string) {
   const parts = [
-    `${SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
+    `${SESSION_COOKIE_NAME}=${token}`,
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
@@ -23,14 +21,14 @@ export async function POST(req: Request) {
 
   const ok = await verifyAdminCredentials(email, password);
   if (!ok) {
-    return NextResponse.json({ error: "Credenciais inválidas." }, { status: 401 });
+    return Response.json({ error: "Credenciais inválidas." }, { status: 401 });
   }
 
   const token = await signSession({ email });
   const redirectTo = nextPath && nextPath.startsWith("/") ? nextPath : "/app";
-  const res = NextResponse.json({ redirectTo }, { status: 200 });
-  res.headers.set("Cache-Control", "no-store");
-  res.headers.append("Set-Cookie", buildSessionCookie(token));
-
-  return res;
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json; charset=utf-8");
+  headers.set("Cache-Control", "no-store");
+  headers.append("Set-Cookie", buildSessionCookie(token));
+  return new Response(JSON.stringify({ redirectTo }), { status: 200, headers });
 }
