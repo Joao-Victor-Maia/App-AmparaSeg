@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  cpfCnpj   String   @unique
+  email     String?
+  phone     String?
+  birthDate DateTime?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles Vehicle[]
+  policies Policy[]
+  claims   Claim[]
+
+  @@index([name])
+  @@index([cpfCnpj])
+}
+
+model Vehicle {
+  id        String   @id @default(uuid())
+  clientId  String
+  plate     String
+  brand     String?
+  model     String?
+  year      Int?
+  renavam   String?
+  createdAt DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
+  @@index([plate])
+}
+
+model Policy {
+  id          String     @id @default(uuid())
+  clientId    String
+  insurer     String
+  policyType  String
+  policyNo    String
+  startDate   DateTime
+  endDate     DateTime
+  premium     Decimal?   @db.Decimal(10, 2)
+  status      String     @default("ATIVA")
+  pdfUrl      String?
+  pdfFileName String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  client Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  claims Claim[]
+
+  @@unique([insurer, policyNo])
+  @@index([clientId])
+  @@index([policyNo])
+  @@index([endDate])
+}
+
+model Claim {
+  id          String   @id @default(uuid())
+  clientId    String
+  policyId    String?
+  occurredAt  DateTime
+  description String
+  status      String   @default("ABERTO")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  client Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  policy Policy? @relation(fields: [policyId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([policyId])
+  @@index([occurredAt])
+}
