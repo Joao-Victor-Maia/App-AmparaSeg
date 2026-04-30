@@ -14,12 +14,12 @@ export async function POST(req: Request) {
     const url = new URL("/login", req.url);
     if (nextPath) url.searchParams.set("next", nextPath);
     url.searchParams.set("error", "1");
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(url, 303);
   }
 
   const token = await signSession({ email });
   const redirectTo = nextPath && nextPath.startsWith("/") ? nextPath : "/app";
-  const res = NextResponse.redirect(new URL(redirectTo, req.url));
+  const res = NextResponse.redirect(new URL(redirectTo, req.url), 303);
 
   res.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
