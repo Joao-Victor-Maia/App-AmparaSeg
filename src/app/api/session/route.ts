@@ -17,22 +17,34 @@ function json(data: unknown) {
 
 export async function GET() {
   const cookieStore = await cookies();
+  const cookieNames = cookieStore.getAll().map((c) => c.name);
   const token =
     cookieStore.get(SECURE_SESSION_COOKIE_NAME)?.value ??
     cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (!token) {
-    return json({ hasCookie: false, valid: false, error: "missing_cookie" });
+    return json({
+      hasCookie: false,
+      valid: false,
+      error: "missing_cookie",
+      cookieNames,
+    });
   }
 
   try {
     const session = await verifySession(token);
-    return json({ hasCookie: true, valid: true, email: session.email });
+    return json({
+      hasCookie: true,
+      valid: true,
+      email: session.email,
+      cookieNames,
+    });
   } catch (err) {
     return json({
       hasCookie: true,
       valid: false,
       error: err instanceof Error ? err.message : String(err),
+      cookieNames,
     });
   }
 }
