@@ -1,18 +1,28 @@
-import { SESSION_COOKIE_NAME, verifyAdminCredentials } from "@/lib/auth";
+import {
+  SECURE_SESSION_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+  verifyAdminCredentials,
+} from "@/lib/auth";
 import { signSession } from "@/lib/authCore";
 
 export const runtime = "nodejs";
 
+function cookieNameFor(url: URL) {
+  return url.protocol === "https:" ? SECURE_SESSION_COOKIE_NAME : SESSION_COOKIE_NAME;
+}
+
 function buildSessionCookie(token: string, url: URL) {
   const isHttps = url.protocol === "https:";
+  const name = cookieNameFor(url);
   const parts = [
-    `${SESSION_COOKIE_NAME}=${token}`,
+    `${name}=${token}`,
     "Path=/",
     "HttpOnly",
     isHttps ? "SameSite=None" : "SameSite=Lax",
     `Max-Age=${60 * 60 * 24 * 7}`,
   ];
   if (isHttps) parts.push("Secure");
+  if (isHttps && name.startsWith("__Host-")) parts.push("Priority=High");
   return parts.join("; ");
 }
 

@@ -4,14 +4,20 @@ import { cookies } from "next/headers";
 import { signSession, verifySession } from "@/lib/authCore";
 
 export const SESSION_COOKIE_NAME = "amparaseg_session";
+export const SECURE_SESSION_COOKIE_NAME = "__Host-amparaseg_session";
+
+export function getSessionCookieNames() {
+  return [SECURE_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME] as const;
+}
 
 export async function createSession(email: string) {
   const token = await signSession({ email });
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, token, {
+  const isHttps = process.env.NODE_ENV === "production";
+  cookieStore.set(isHttps ? SECURE_SESSION_COOKIE_NAME : SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isHttps ? "none" : "lax",
+    secure: isHttps,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });
@@ -19,18 +25,23 @@ export async function createSession(email: string) {
 
 export async function clearSession() {
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE_NAME, "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 0,
-  });
+  const isHttps = process.env.NODE_ENV === "production";
+  for (const name of getSessionCookieNames()) {
+    cookieStore.set(name, "", {
+      httpOnly: true,
+      sameSite: isHttps ? "none" : "lax",
+      secure: isHttps,
+      path: "/",
+      maxAge: 0,
+    });
+  }
 }
 
 export async function getSession() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+  const token =
+    cookieStore.get(SECURE_SESSION_COOKIE_NAME)?.value ??
+    cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
   try {
     return await verifySession(token);

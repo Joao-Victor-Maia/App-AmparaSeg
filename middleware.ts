@@ -2,11 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { verifySession } from "./src/lib/authCore";
 
-const SESSION_COOKIE_NAME = "amparaseg_session";
+const SESSION_COOKIE_NAMES = ["__Host-amparaseg_session", "amparaseg_session"];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const token =
+    req.cookies.get(SESSION_COOKIE_NAMES[0])?.value ??
+    req.cookies.get(SESSION_COOKIE_NAMES[1])?.value;
 
   if (pathname === "/login") {
     if (!token) return NextResponse.next();
