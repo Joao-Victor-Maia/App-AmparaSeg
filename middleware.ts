@@ -13,11 +13,7 @@ export async function middleware(req: NextRequest) {
     try {
       await verifySession(token);
       return NextResponse.redirect(new URL("/app", req.url));
-    } catch (err) {
-      console.error("auth middleware: invalid session at /login", {
-        pathname,
-        error: err instanceof Error ? err.message : String(err),
-      });
+    } catch {
       return NextResponse.next();
     }
   }
@@ -31,11 +27,7 @@ export async function middleware(req: NextRequest) {
     try {
       await verifySession(token);
       return NextResponse.next();
-    } catch (err) {
-      console.error("auth middleware: invalid session at /app", {
-        pathname,
-        error: err instanceof Error ? err.message : String(err),
-      });
+    } catch {
       const url = new URL("/login", req.url);
       url.searchParams.set("next", pathname);
       return NextResponse.redirect(url);
