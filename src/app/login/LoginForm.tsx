@@ -1,17 +1,6 @@
-"use client";
-
-import { useActionState } from "react";
-
-import { loginAction, type LoginState } from "./actions";
-
 export function LoginForm({ nextPath }: { nextPath?: string }) {
-  const [state, action, pending] = useActionState<LoginState, FormData>(
-    loginAction,
-    null,
-  );
-
   return (
-    <form action={action} className="w-full space-y-4">
+    <form method="post" action="/api/login" className="w-full space-y-4">
       <input type="hidden" name="next" value={nextPath ?? ""} />
 
       <div className="space-y-2">
@@ -36,18 +25,11 @@ export function LoginForm({ nextPath }: { nextPath?: string }) {
         />
       </div>
 
-      {state?.error ? (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {state.error}
-        </div>
-      ) : null}
-
       <button
         type="submit"
-        disabled={pending}
         className="w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
       >
-        {pending ? "Entrando..." : "Entrar"}
+        Entrar
       </button>
     </form>
   );
