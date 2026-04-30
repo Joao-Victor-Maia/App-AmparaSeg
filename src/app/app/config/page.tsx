@@ -4,15 +4,17 @@ export const dynamic = "force-dynamic";
 
 function item(label: string, ok: boolean, detail?: string) {
   return (
-    <div className="flex items-start justify-between gap-4 rounded-2xl border border-zinc-200 bg-white p-5">
+    <div className="flex items-start justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="space-y-1">
-        <div className="text-sm font-semibold text-zinc-900">{label}</div>
-        {detail ? <div className="text-sm text-zinc-600">{detail}</div> : null}
+        <div className="text-sm font-semibold text-foreground">{label}</div>
+        {detail ? (
+          <div className="text-sm text-muted-foreground">{detail}</div>
+        ) : null}
       </div>
       <div
         className={[
           "rounded-full px-3 py-1 text-xs font-semibold",
-          ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700",
+          ok ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700",
         ].join(" ")}
       >
         {ok ? "OK" : "Pendente"}
@@ -49,10 +51,10 @@ export default async function ConfigPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
           Configuração
         </h1>
-        <p className="text-sm text-zinc-600">
+        <p className="text-sm text-muted-foreground">
           Checklist rápido para rodar localmente e subir no Vercel.
         </p>
       </div>
@@ -82,9 +84,9 @@ export default async function ConfigPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-        <div className="text-sm font-semibold text-zinc-900">Comandos úteis</div>
-        <div className="mt-3 grid gap-2 text-sm text-zinc-700">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+        <div className="text-sm font-semibold text-foreground">Comandos úteis</div>
+        <div className="mt-3 grid gap-2 text-sm text-slate-700">
           <div>
             <span className="font-semibold">npm run db:push</span> — aplica o schema
             no banco

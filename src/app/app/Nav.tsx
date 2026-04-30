@@ -7,7 +7,6 @@ const links = [
   { href: "/app", label: "Painel" },
   { href: "/app/clientes", label: "Clientes" },
   { href: "/app/apolices", label: "Apólices" },
-  { href: "/app/sinistros", label: "Sinistros" },
   { href: "/app/config", label: "Config" },
 ];
 
@@ -23,10 +22,10 @@ export function Nav() {
             key={l.href}
             href={l.href}
             className={[
-              "block rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+              "block rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
               active
-                ? "bg-zinc-900 text-white"
-                : "text-zinc-700 hover:bg-zinc-100",
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-slate-200 hover:bg-slate-900/60 hover:text-white",
             ].join(" ")}
           >
             {l.label}

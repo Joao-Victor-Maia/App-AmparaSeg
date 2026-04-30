@@ -32,6 +32,13 @@ export async function createPolicyAction(
   formData: FormData,
 ): Promise<ActionState> {
   await requireSession();
+  const file = formData.get("pdf");
+  const hasFile = file instanceof File && file.size > 0;
+
+  if (hasFile && file.type !== "application/pdf") {
+    return { error: "Envie um arquivo PDF válido." };
+  }
+
   const parsed = policySchema.safeParse({
     clientId: formData.get("clientId"),
     insurer: formData.get("insurer"),
@@ -58,6 +65,24 @@ export async function createPolicyAction(
         status: parsed.data.status.trim(),
       },
     });
+
+    if (hasFile) {
+      try {
+        const blob = await put(`apolices/${created.id}/${file.name}`, file, {
+          access: "public",
+        });
+        await prisma.policy.update({
+          where: { id: created.id },
+          data: { pdfUrl: blob.url, pdfFileName: file.name },
+        });
+        revalidatePath("/app/apolices");
+        redirect(`/app/apolices/${created.id}`);
+      } catch {
+        revalidatePath("/app/apolices");
+        redirect(`/app/apolices/${created.id}?erroPdf=3`);
+      }
+    }
+
     revalidatePath("/app/apolices");
     redirect(`/app/apolices/${created.id}`);
     return null;

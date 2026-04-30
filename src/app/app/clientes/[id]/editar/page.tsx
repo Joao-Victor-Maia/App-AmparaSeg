@@ -25,7 +25,7 @@ export default async function EditClientPage({
 
   if (!client) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-6 text-sm text-zinc-600">
+      <div className="rounded-2xl border border-border bg-card px-5 py-6 text-sm text-muted-foreground shadow-sm">
         Cliente não encontrado.
       </div>
     );
@@ -37,14 +37,14 @@ export default async function EditClientPage({
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-3">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Editar cliente
           </h1>
-          <p className="text-sm text-zinc-600">{client.name}</p>
+          <p className="text-sm text-muted-foreground">{client.name}</p>
         </div>
         <Link
           href={`/app/clientes/${client.id}`}
-          className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+          className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-muted"
         >
           Voltar
         </Link>

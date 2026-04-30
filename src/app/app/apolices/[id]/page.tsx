@@ -46,7 +46,7 @@ export default async function PolicyDetailsPage({
 
   if (!policy) {
     return (
-      <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-6 text-sm text-zinc-600">
+      <div className="rounded-2xl border border-border bg-card px-5 py-6 text-sm text-muted-foreground shadow-sm">
         Apólice não encontrada.
       </div>
     );
@@ -76,14 +76,14 @@ export default async function PolicyDetailsPage({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Apólice {policy.policyNo}
           </h1>
-          <div className="text-sm text-zinc-600">
+          <div className="text-sm text-muted-foreground">
             Cliente:{" "}
             <Link
               href={`/app/clientes/${policy.client.id}`}
-              className="font-medium text-zinc-900 hover:underline"
+              className="font-semibold text-foreground hover:underline decoration-primary/60 underline-offset-4"
             >
               {policy.client.name}
             </Link>{" "}
@@ -93,12 +93,12 @@ export default async function PolicyDetailsPage({
         <div className="flex items-center gap-2">
           <Link
             href="/app/apolices"
-            className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50"
+            className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-muted"
           >
             Voltar
           </Link>
           <form action={deletePolicy}>
-            <button className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100">
+            <button className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 shadow-sm hover:bg-rose-100">
               Excluir
             </button>
           </form>
@@ -106,8 +106,8 @@ export default async function PolicyDetailsPage({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-200 bg-white p-6 lg:col-span-2">
-          <div className="text-sm font-semibold text-zinc-900">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm lg:col-span-2">
+          <div className="text-sm font-semibold text-foreground">
             Dados da apólice
           </div>
           <div className="mt-5">
@@ -130,22 +130,22 @@ export default async function PolicyDetailsPage({
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6">
-            <div className="text-sm font-semibold text-zinc-900">PDF da apólice</div>
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+            <div className="text-sm font-semibold text-foreground">PDF da apólice</div>
 
-            <div className="mt-3 text-sm text-zinc-700">
+            <div className="mt-3 text-sm text-slate-700">
               {policy.pdfUrl ? (
                 <div className="space-y-3">
                   <a
                     href={policy.pdfUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-semibold text-zinc-900 hover:underline"
+                    className="font-semibold text-foreground hover:underline decoration-primary/60 underline-offset-4"
                   >
                     {policy.pdfFileName ?? "Ver PDF"}
                   </a>
                   <form action={removePdf}>
-                    <button className="rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50">
+                    <button className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground shadow-sm hover:bg-muted">
                       Remover PDF
                     </button>
                   </form>
@@ -161,22 +161,24 @@ export default async function PolicyDetailsPage({
                   name="pdf"
                   type="file"
                   accept="application/pdf"
-                  className="block w-full text-sm text-zinc-700 file:mr-4 file:rounded-xl file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-zinc-800"
+                  className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:brightness-95"
                 />
-                <button className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800">
+                <button className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:brightness-95">
                   Anexar PDF
                 </button>
               </form>
               {erroPdf ? (
-                <div className="mt-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
                   {erroPdf === "2"
                     ? "Envie um arquivo PDF."
-                    : "Selecione um arquivo para anexar."}
+                    : erroPdf === "3"
+                      ? "Não foi possível enviar o PDF. Verifique o BLOB_READ_WRITE_TOKEN."
+                      : "Selecione um arquivo para anexar."}
                 </div>
               ) : null}
             </div>
 
-            <div className="mt-4 text-xs text-zinc-500">
+            <div className="mt-4 text-xs text-muted-foreground">
               Para upload funcionar no Vercel, configure BLOB_READ_WRITE_TOKEN.
             </div>
           </div>

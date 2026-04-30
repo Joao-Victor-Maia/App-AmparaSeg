@@ -30,6 +30,7 @@ export function PolicyForm({
   initialValues,
   action,
   submitLabel,
+  allowPdfUpload,
 }: {
   clients: ClientOption[];
   initialValues?: PolicyFormValues;
@@ -38,6 +39,7 @@ export function PolicyForm({
     formData: FormData,
   ) => ActionState | Promise<ActionState>;
   submitLabel: string;
+  allowPdfUpload?: boolean;
 }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     action,
@@ -45,15 +47,15 @@ export function PolicyForm({
   );
 
   return (
-    <form action={formAction} className="space-y-6">
-      <div className="grid gap-4 rounded-2xl border border-zinc-200 bg-white p-6 md:grid-cols-2">
+    <form action={formAction} encType="multipart/form-data" className="space-y-6">
+      <div className="grid gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm md:grid-cols-2">
         <div className="space-y-2 md:col-span-2">
-          <label className="text-sm font-medium text-zinc-900">Cliente</label>
+          <label className="text-sm font-semibold text-foreground">Cliente</label>
           <select
             name="clientId"
             required
             defaultValue={initialValues?.clientId ?? ""}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           >
             <option value="" disabled>
               Selecione...
@@ -67,43 +69,45 @@ export function PolicyForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">Seguradora</label>
+          <label className="text-sm font-semibold text-foreground">
+            Seguradora
+          </label>
           <input
             name="insurer"
             required
             defaultValue={initialValues?.insurer ?? ""}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">Tipo</label>
+          <label className="text-sm font-semibold text-foreground">Tipo</label>
           <input
             name="policyType"
             required
             defaultValue={initialValues?.policyType ?? ""}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">
+          <label className="text-sm font-semibold text-foreground">
             Número da apólice
           </label>
           <input
             name="policyNo"
             required
             defaultValue={initialValues?.policyNo ?? ""}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">Status</label>
+          <label className="text-sm font-semibold text-foreground">Status</label>
           <select
             name="status"
             defaultValue={initialValues?.status ?? "ATIVA"}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           >
             <option value="ATIVA">ATIVA</option>
             <option value="VENCIDA">VENCIDA</option>
@@ -112,40 +116,59 @@ export function PolicyForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">Início</label>
+          <label className="text-sm font-semibold text-foreground">Início</label>
           <input
             name="startDate"
             type="date"
             required
             defaultValue={toDateInputValue(initialValues?.startDate)}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">Vencimento</label>
+          <label className="text-sm font-semibold text-foreground">
+            Vencimento
+          </label>
           <input
             name="endDate"
             type="date"
             required
             defaultValue={toDateInputValue(initialValues?.endDate)}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-zinc-900">Prêmio</label>
+          <label className="text-sm font-semibold text-foreground">Prêmio</label>
           <input
             name="premium"
             inputMode="decimal"
             defaultValue={initialValues?.premium ?? ""}
-            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none focus:border-zinc-300"
+            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm text-foreground shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10"
           />
         </div>
+
+        {allowPdfUpload ? (
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-semibold text-foreground">
+              PDF da apólice
+            </label>
+            <input
+              name="pdf"
+              type="file"
+              accept="application/pdf"
+              className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:brightness-95"
+            />
+            <div className="text-xs text-muted-foreground">
+              Opcional. Você também pode anexar depois na tela da apólice.
+            </div>
+          </div>
+        ) : null}
       </div>
 
       {state?.error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700 shadow-sm">
           {state.error}
         </div>
       ) : null}
@@ -153,7 +176,7 @@ export function PolicyForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-60"
+        className="rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:brightness-95 disabled:opacity-60"
       >
         {pending ? "Salvando..." : submitLabel}
       </button>
