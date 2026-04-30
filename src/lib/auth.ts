@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 
 import { signSession, verifySession } from "@/lib/authCore";
 
-export const SESSION_COOKIE_NAME = "amparaseg_session";
-export const SECURE_SESSION_COOKIE_NAME = "__Host-amparaseg_session";
+export const SESSION_COOKIE_NAME = "amparaseg_session_v2";
+export const SECURE_SESSION_COOKIE_NAME = "__Host-amparaseg_session_v2";
 
 export function getSessionCookieNames() {
   return [SECURE_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME] as const;

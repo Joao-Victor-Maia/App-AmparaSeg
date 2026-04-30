@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { verifySession } from "./src/lib/authCore";
 
-const SESSION_COOKIE_NAMES = ["__Host-amparaseg_session", "amparaseg_session"];
+const SESSION_COOKIE_NAMES = [
+  "__Host-amparaseg_session_v2",
+  "amparaseg_session_v2",
+];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

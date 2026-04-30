@@ -12,11 +12,23 @@ function cookieNameFor() {
   return SESSION_COOKIE_NAME;
 }
 
+function cookieDomainFor(hostname: string) {
+  const lower = hostname.trim().toLowerCase();
+  if (!lower) return null;
+  if (lower === "localhost") return null;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(lower)) return null;
+  if (lower.endsWith(".vercel.app")) return null;
+  if (lower.startsWith("www.")) return lower.slice(4);
+  return lower;
+}
+
 function buildSessionCookie(token: string, url: URL) {
   const isHttps = url.protocol === "https:";
   const name = cookieNameFor();
+  const domain = cookieDomainFor(url.hostname);
   const parts = [
     `${name}=${token}`,
+    ...(domain ? [`Domain=${domain}`] : []),
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
