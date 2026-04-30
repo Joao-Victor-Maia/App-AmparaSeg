@@ -26,6 +26,14 @@ function buildSessionCookie(token: string, url: URL) {
   return parts.join("; ");
 }
 
+function redirect303(url: URL, cookie?: string) {
+  const headers = new Headers();
+  headers.set("Location", url.toString());
+  headers.set("Cache-Control", "no-store");
+  if (cookie) headers.append("Set-Cookie", cookie);
+  return new Response(null, { status: 303, headers });
+}
+
 export async function POST(req: Request) {
   const url = new URL(req.url);
   const formData = await req.formData();
@@ -35,15 +43,16 @@ export async function POST(req: Request) {
 
   const ok = await verifyAdminCredentials(email, password);
   if (!ok) {
-    return Response.json({ error: "Credenciais inválidas." }, { status: 401 });
+    const loginUrl = new URL("/login", url);
+    loginUrl.searchParams.set("error", "1");
+    if (nextPath) loginUrl.searchParams.set("next", nextPath);
+    return redirect303(loginUrl);
   }
 
   const token = await signSession({ email });
   const redirectTo = nextPath && nextPath.startsWith("/") ? nextPath : "/app";
-  const headers = new Headers();
-  headers.set("Content-Type", "application/json; charset=utf-8");
-  headers.set("Cache-Control", "no-store");
-  headers.set("Vary", "Cookie");
-  headers.append("Set-Cookie", buildSessionCookie(token, url));
-  return new Response(JSON.stringify({ redirectTo }), { status: 200, headers });
+  return redirect303(
+    new URL(redirectTo, url),
+    buildSessionCookie(token, url),
+  );
 }

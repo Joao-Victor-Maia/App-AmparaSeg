@@ -3,9 +3,9 @@ import { LoginForm } from "./LoginForm";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next } = await searchParams;
+  const { next, error } = await searchParams;
 
   return (
     <div className="flex flex-1 items-center justify-center bg-zinc-50 px-6 py-16">
@@ -20,6 +20,11 @@ export default async function LoginPage({
         </div>
 
         <div className="mt-8">
+          {error ? (
+            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              Credenciais inválidas.
+            </div>
+          ) : null}
           <LoginForm nextPath={next} />
         </div>
       </div>
