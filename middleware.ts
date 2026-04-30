@@ -14,13 +14,7 @@ export async function middleware(req: NextRequest) {
     req.cookies.get(SESSION_COOKIE_NAMES[1])?.value;
 
   if (pathname === "/login") {
-    if (!token) return NextResponse.next();
-    try {
-      await verifySession(token);
-      return NextResponse.redirect(new URL("/app", req.url));
-    } catch {
-      return NextResponse.next();
-    }
+    return NextResponse.next();
   }
 
   if (pathname.startsWith("/app")) {

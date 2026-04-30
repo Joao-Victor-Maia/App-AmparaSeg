@@ -32,7 +32,6 @@ function buildSessionCookie(token: string, url: URL) {
     "Path=/",
     "HttpOnly",
     "SameSite=Lax",
-    `Max-Age=${60 * 60 * 24 * 7}`,
   ];
   if (isHttps) parts.push("Secure");
   return parts.join("; ");

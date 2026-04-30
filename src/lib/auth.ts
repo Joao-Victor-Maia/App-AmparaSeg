@@ -19,7 +19,6 @@ export async function createSession(email: string) {
     sameSite: isHttps ? "none" : "lax",
     secure: isHttps,
     path: "/",
-    maxAge: 60 * 60 * 24 * 7,
   });
 }
 
