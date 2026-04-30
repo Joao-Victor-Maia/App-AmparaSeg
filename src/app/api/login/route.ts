@@ -6,6 +6,8 @@ import {
 import { signSession } from "@/lib/authCore";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function cookieNameFor(url: URL) {
   return url.protocol === "https:" ? SECURE_SESSION_COOKIE_NAME : SESSION_COOKIE_NAME;
@@ -43,6 +45,7 @@ export async function POST(req: Request) {
   const headers = new Headers();
   headers.set("Content-Type", "application/json; charset=utf-8");
   headers.set("Cache-Control", "no-store");
+  headers.set("Vary", "Cookie");
   headers.append("Set-Cookie", buildSessionCookie(token, url));
   return new Response(JSON.stringify({ redirectTo }), { status: 200, headers });
 }
