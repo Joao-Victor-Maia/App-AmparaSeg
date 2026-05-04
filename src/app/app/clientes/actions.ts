@@ -66,6 +66,13 @@ function toText(value: unknown) {
 function parseAnyDate(value: unknown): Date | null {
   if (!value) return null;
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const excelSerial = value;
+    const utcDays = excelSerial - 25569;
+    const utcValue = utcDays * 86400 * 1000;
+    const d = new Date(utcValue);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
 
   const s = String(value).trim();
   if (!s) return null;
@@ -167,7 +174,7 @@ export async function importClientsAction(
     "nº apolice",
     "policy no",
   ];
-  const startDateKeys = ["inicio", "vigencia inicio", "data inicio", "inicio vigencia"];
+  const startDateKeys = ["inicio", "vigencia", "vigencia inicio", "data inicio", "inicio vigencia"];
   const endDateKeys = [
     "vencimento",
     "fim",
@@ -185,12 +192,11 @@ export async function importClientsAction(
       hasAny(insurerKeys) &&
       hasAny(policyNoKeys) &&
       hasAny(policyTypeKeys) &&
-      hasAny(startDateKeys) &&
-      hasAny(endDateKeys);
+      hasAny(startDateKeys);
     if (!ok) {
       return {
         error:
-          "Para importar apólices, inclua as colunas: Seguradora, Tipo, Número da apólice, Início e Vencimento.",
+          "Para importar apólices, inclua as colunas: Seguradora, Tipo, Número da apólice e Início (ou Vigência).",
       };
     }
   }
@@ -271,7 +277,16 @@ export async function importClientsAction(
         const policyType = toText(pickCell(row, headerIndex, policyTypeKeys));
         const policyNo = toText(pickCell(row, headerIndex, policyNoKeys));
         const startDate = parseAnyDate(pickCell(row, headerIndex, startDateKeys));
-        const endDate = parseAnyDate(pickCell(row, headerIndex, endDateKeys));
+        const endDateFromSheet = parseAnyDate(pickCell(row, headerIndex, endDateKeys));
+        const endDate =
+          endDateFromSheet ??
+          (startDate
+            ? (() => {
+                const d = new Date(startDate);
+                d.setFullYear(d.getFullYear() + 1);
+                return d;
+              })()
+            : null);
         const premium = parsePremium(pickCell(row, headerIndex, premiumKeys));
         const status = toText(pickCell(row, headerIndex, statusKeys)) ?? "ATIVA";
 
@@ -281,7 +296,7 @@ export async function importClientsAction(
             rowErrors.push({
               row: rowNumber,
               message:
-                "Dados de apólice incompletos (Seguradora, Tipo, Número, Início e Vencimento).",
+                "Dados de apólice incompletos (Seguradora, Tipo, Número e Início/Vigência).",
             });
           }
         } else {
