@@ -16,10 +16,11 @@ export default function ImportClientsPage() {
       <div className="flex items-end justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Importar clientes
+            Importar clientes e apólices
           </h1>
           <p className="text-sm text-muted-foreground">
-            Envie um Excel (.xlsx) e o sistema cadastra/atualiza os clientes.
+            Envie um Excel (.xlsx ou .xls) e o sistema cadastra/atualiza clientes e
+            apólices.
           </p>
         </div>
         <Link
@@ -54,14 +55,36 @@ export default function ImportClientsPage() {
             <div className="text-sm font-semibold text-foreground">
               Colunas reconhecidas
             </div>
-            <div className="rounded-xl border border-border bg-muted px-4 py-3 text-xs text-slate-700">
-              Nome, CPF/CNPJ, E-mail, Telefone, Data de nascimento, Observações
+            <div className="text-xs text-muted-foreground">
+              Clientes: Nome, CPF/CNPJ, E-mail, Telefone, Data de nascimento,
+              Observações.
             </div>
             <div className="text-xs text-muted-foreground">
-              Obrigatórias: Nome e CPF/CNPJ. CPF/CNPJ é usado para atualizar se já
-              existir.
+              Apólices: Seguradora, Tipo, Número da apólice, Início, Vencimento,
+              Prêmio, Status (opcional).
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Obrigatórias: Nome e CPF/CNPJ. Para importar apólices também, marque
+              a opção abaixo e inclua as colunas de apólice.
             </div>
           </div>
+        </div>
+
+        <div className="mt-5 flex items-center gap-3">
+          <input
+            id="includePolicies"
+            name="includePolicies"
+            type="checkbox"
+            value="1"
+            defaultChecked
+            className="h-4 w-4 accent-teal-600"
+          />
+          <label
+            htmlFor="includePolicies"
+            className="text-sm font-semibold text-foreground"
+          >
+            Importar apólices junto com clientes
+          </label>
         </div>
 
         {state?.error ? (
@@ -71,7 +94,7 @@ export default function ImportClientsPage() {
         ) : null}
 
         {state?.total != null ? (
-          <div className="mt-5 grid gap-3 md:grid-cols-4">
+          <div className="mt-5 space-y-3">
             <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
               <div className="text-xs font-semibold text-muted-foreground">
                 Linhas
@@ -80,30 +103,69 @@ export default function ImportClientsPage() {
                 {state.total}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-              <div className="text-xs font-semibold text-muted-foreground">
-                Criados
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                <div className="text-xs font-semibold text-muted-foreground">
+                  Clientes criados
+                </div>
+                <div className="mt-1 text-lg font-semibold text-foreground">
+                  {state.created ?? 0}
+                </div>
               </div>
-              <div className="mt-1 text-lg font-semibold text-foreground">
-                {state.created ?? 0}
+              <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                <div className="text-xs font-semibold text-muted-foreground">
+                  Clientes atualizados
+                </div>
+                <div className="mt-1 text-lg font-semibold text-foreground">
+                  {state.updated ?? 0}
+                </div>
+              </div>
+              <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                <div className="text-xs font-semibold text-muted-foreground">
+                  Clientes ignorados
+                </div>
+                <div className="mt-1 text-lg font-semibold text-foreground">
+                  {state.skipped ?? 0}
+                </div>
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-              <div className="text-xs font-semibold text-muted-foreground">
-                Atualizados
+
+            {state.policiesTotal != null ? (
+              <div className="grid gap-3 md:grid-cols-4">
+                <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    Apólices (linhas)
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-foreground">
+                    {state.policiesTotal}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    Apólices criadas
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-foreground">
+                    {state.policiesCreated ?? 0}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    Apólices atualizadas
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-foreground">
+                    {state.policiesUpdated ?? 0}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
+                  <div className="text-xs font-semibold text-muted-foreground">
+                    Apólices ignoradas
+                  </div>
+                  <div className="mt-1 text-lg font-semibold text-foreground">
+                    {state.policiesSkipped ?? 0}
+                  </div>
+                </div>
               </div>
-              <div className="mt-1 text-lg font-semibold text-foreground">
-                {state.updated ?? 0}
-              </div>
-            </div>
-            <div className="rounded-xl border border-border bg-card px-4 py-3 shadow-sm">
-              <div className="text-xs font-semibold text-muted-foreground">
-                Ignorados
-              </div>
-              <div className="mt-1 text-lg font-semibold text-foreground">
-                {state.skipped ?? 0}
-              </div>
-            </div>
+            ) : null}
           </div>
         ) : null}
 

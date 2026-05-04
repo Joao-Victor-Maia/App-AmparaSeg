@@ -33,6 +33,10 @@ export type ImportClientsState =
       created?: number;
       updated?: number;
       skipped?: number;
+      policiesTotal?: number;
+      policiesCreated?: number;
+      policiesUpdated?: number;
+      policiesSkipped?: number;
       rowErrors?: Array<{ row: number; message: string }>;
     }
   | null;
@@ -59,7 +63,7 @@ function toText(value: unknown) {
   return s === "" ? null : s;
 }
 
-function parseBirthDate(value: unknown): Date | null {
+function parseAnyDate(value: unknown): Date | null {
   if (!value) return null;
   if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
 
@@ -81,11 +85,32 @@ function parseBirthDate(value: unknown): Date | null {
   return null;
 }
 
+function parsePremium(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value.toFixed(2);
+  }
+  const s0 = String(value).trim();
+  if (!s0) return null;
+  const s = s0
+    .replace(/\s/g, "")
+    .replace(/\./g, "")
+    .replace(",", ".");
+  const num = Number(s);
+  if (!Number.isFinite(num)) return null;
+  return num.toFixed(2);
+}
+
+function parseBirthDate(value: unknown): Date | null {
+  return parseAnyDate(value);
+}
+
 export async function importClientsAction(
   _: ImportClientsState,
   formData: FormData,
 ): Promise<ImportClientsState> {
   await requireSession();
+  const includePolicies = String(formData.get("includePolicies") ?? "") === "1";
 
   const file = formData.get("file");
   if (!file || !(file instanceof File) || file.size === 0) {
@@ -132,11 +157,53 @@ export async function importClientsAction(
   ];
   const notesKeys = ["observacoes", "observacao", "obs", "anotacoes", "notas", "notes"];
 
+  const insurerKeys = ["seguradora", "companhia", "cia", "empresa", "insurer"];
+  const policyTypeKeys = ["tipo", "ramo", "tipo seguro", "modalidade", "policy type"];
+  const policyNoKeys = [
+    "numero apolice",
+    "n apolice",
+    "apolice",
+    "numero da apolice",
+    "nº apolice",
+    "policy no",
+  ];
+  const startDateKeys = ["inicio", "vigencia inicio", "data inicio", "inicio vigencia"];
+  const endDateKeys = [
+    "vencimento",
+    "fim",
+    "vigencia fim",
+    "data vencimento",
+    "fim vigencia",
+    "termino",
+  ];
+  const premiumKeys = ["premio", "valor", "valor premio", "premio total", "premium"];
+  const statusKeys = ["status", "situacao"];
+
+  const hasAny = (keys: string[]) => keys.some((k) => k in headerIndex);
+  if (includePolicies) {
+    const ok =
+      hasAny(insurerKeys) &&
+      hasAny(policyNoKeys) &&
+      hasAny(policyTypeKeys) &&
+      hasAny(startDateKeys) &&
+      hasAny(endDateKeys);
+    if (!ok) {
+      return {
+        error:
+          "Para importar apólices, inclua as colunas: Seguradora, Tipo, Número da apólice, Início e Vencimento.",
+      };
+    }
+  }
+
   const dataRows = rows.slice(1);
   const rowErrors: Array<{ row: number; message: string }> = [];
   let created = 0;
   let updated = 0;
   let skipped = 0;
+  let policiesTotal = 0;
+  let policiesCreated = 0;
+  let policiesUpdated = 0;
+  let policiesSkipped = 0;
 
   for (let i = 0; i < dataRows.length; i++) {
     const rowNumber = i + 2;
@@ -174,8 +241,9 @@ export async function importClientsAction(
         select: { id: true },
       });
 
-      await prisma.client.upsert({
+      const savedClient = await prisma.client.upsert({
         where: { cpfCnpj: cpfCnpj.trim() },
+        select: { id: true },
         create: {
           name: clientName.trim(),
           cpfCnpj: cpfCnpj.trim(),
@@ -195,6 +263,77 @@ export async function importClientsAction(
 
       if (existing) updated += 1;
       else created += 1;
+
+      if (includePolicies) {
+        policiesTotal += 1;
+
+        const insurer = toText(pickCell(row, headerIndex, insurerKeys));
+        const policyType = toText(pickCell(row, headerIndex, policyTypeKeys));
+        const policyNo = toText(pickCell(row, headerIndex, policyNoKeys));
+        const startDate = parseAnyDate(pickCell(row, headerIndex, startDateKeys));
+        const endDate = parseAnyDate(pickCell(row, headerIndex, endDateKeys));
+        const premium = parsePremium(pickCell(row, headerIndex, premiumKeys));
+        const status = toText(pickCell(row, headerIndex, statusKeys)) ?? "ATIVA";
+
+        if (!insurer || !policyType || !policyNo || !startDate || !endDate) {
+          policiesSkipped += 1;
+          if (rowErrors.length < 20) {
+            rowErrors.push({
+              row: rowNumber,
+              message:
+                "Dados de apólice incompletos (Seguradora, Tipo, Número, Início e Vencimento).",
+            });
+          }
+        } else {
+          try {
+            const insurerValue = insurer.trim();
+            const policyNoValue = policyNo.trim();
+            const existingPolicy = await prisma.policy.findFirst({
+              where: { insurer: insurerValue, policyNo: policyNoValue },
+              select: { id: true },
+            });
+
+            if (existingPolicy) {
+              await prisma.policy.update({
+                where: { id: existingPolicy.id },
+                data: {
+                  clientId: savedClient.id,
+                  insurer: insurerValue,
+                  policyType: policyType.trim(),
+                  policyNo: policyNoValue,
+                  startDate,
+                  endDate,
+                  premium,
+                  status: status.trim(),
+                },
+              });
+              policiesUpdated += 1;
+            } else {
+              await prisma.policy.create({
+                data: {
+                  clientId: savedClient.id,
+                  insurer: insurerValue,
+                  policyType: policyType.trim(),
+                  policyNo: policyNoValue,
+                  startDate,
+                  endDate,
+                  premium,
+                  status: status.trim(),
+                },
+              });
+              policiesCreated += 1;
+            }
+          } catch {
+            policiesSkipped += 1;
+            if (rowErrors.length < 20) {
+              rowErrors.push({
+                row: rowNumber,
+                message: "Não foi possível importar a apólice desta linha.",
+              });
+            }
+          }
+        }
+      }
     } catch {
       skipped += 1;
       if (rowErrors.length < 20) {
@@ -207,11 +346,16 @@ export async function importClientsAction(
   }
 
   revalidatePath("/app/clientes");
+  if (includePolicies) revalidatePath("/app/apolices");
   return {
     total: dataRows.length,
     created,
     updated,
     skipped,
+    policiesTotal: includePolicies ? policiesTotal : undefined,
+    policiesCreated: includePolicies ? policiesCreated : undefined,
+    policiesUpdated: includePolicies ? policiesUpdated : undefined,
+    policiesSkipped: includePolicies ? policiesSkipped : undefined,
     rowErrors: rowErrors.length ? rowErrors : undefined,
   };
 }
